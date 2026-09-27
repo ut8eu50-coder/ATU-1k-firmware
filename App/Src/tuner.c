@@ -18,7 +18,7 @@ static uint8_t atu_tuner_clip_mask(int16_t value)
 
 static void atu_tuner_restore_pa_output(atu_tuner_t *tuner)
 {
-    if ((tuner->ops.set_pa_output != NULL) && tuner->active) {
+    if (tuner->ops.set_pa_output != NULL) {
         tuner->ops.set_pa_output(tuner->ops.context, tuner->request.pa_output_enabled);
     }
 }

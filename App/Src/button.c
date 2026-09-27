@@ -64,7 +64,7 @@ size_t atu_button_poll(atu_button_state_t *state,
 
                 if (sampled_pressed != 0u) {
                     state->pressed_since_ms[index] = now_ms;
-                    state->last_repeat_ms[index] = now_ms;
+                    state->last_repeat_ms[index] = now_ms + ATU_BUTTON_HOLD_DELAY_MS - ATU_BUTTON_REPEAT_MS;
                     state->long_fired[index] = 0u;
                     atu_button_push_event(events, max_events, &event_count, (atu_button_id_t)index, ATU_BUTTON_EVENT_PRESSED);
                 } else {

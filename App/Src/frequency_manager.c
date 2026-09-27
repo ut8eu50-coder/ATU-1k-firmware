@@ -53,10 +53,9 @@ atu_storage_status_t atu_frequency_manager_update(atu_frequency_manager_t *manag
 
     result->supported_band = atu_storage_find_band(result->active_frequency_hz, NULL);
     if (!result->supported_band) {
-        result->source = ATU_FREQUENCY_SOURCE_MANUAL;
         result->ui_state = ATU_FREQUENCY_UI_MANUAL;
         manager->last_source = result->source;
-        manager->have_frequency = false;
+        manager->have_frequency = true;
         manager->last_frequency_hz = result->active_frequency_hz;
         return ATU_STORAGE_NOT_FOUND;
     }

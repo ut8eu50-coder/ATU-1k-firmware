@@ -2,6 +2,11 @@
 
 #include <string.h>
 
+static bool atu_rtc_backup_bank_valid(uint8_t bank)
+{
+    return (bank == 1u) || (bank == 2u);
+}
+
 uint16_t atu_rtc_backup_checksum(const atu_rtc_backup_state_t *state)
 {
     uint32_t sum = 0u;
@@ -24,7 +29,7 @@ bool atu_rtc_backup_pack(const atu_rtc_backup_state_t *state, uint32_t registers
 {
     uint16_t checksum = 0u;
 
-    if ((state == NULL) || (registers == NULL)) {
+    if ((state == NULL) || (registers == NULL) || !atu_rtc_backup_bank_valid(state->bank)) {
         return false;
     }
 
@@ -57,6 +62,10 @@ bool atu_rtc_backup_unpack(const uint32_t registers[ATU_RTC_BACKUP_REG_COUNT], a
     state->ind_mask = (uint8_t)((registers[2] >> 8) & 0xFFu);
     state->flags = (uint8_t)((registers[2] >> 16) & 0x03u);
     state->bank = (uint8_t)((registers[2] >> 24) & 0xFFu);
+
+    if (!atu_rtc_backup_bank_valid(state->bank)) {
+        return false;
+    }
 
     checksum = atu_rtc_backup_checksum(state);
     return checksum == (uint16_t)(registers[3] & 0xFFFFu);

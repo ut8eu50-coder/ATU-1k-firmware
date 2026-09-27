@@ -38,16 +38,16 @@ typedef enum {
     ATU_STORAGE_INVALID_DATA
 } atu_storage_status_t;
 
-typedef struct {
+typedef struct __attribute__((packed)) {
     uint8_t minimum_swr_tenths;    /* 10..20 => 1.0..2.0 */
-    uint8_t relay_delay_ms;        /* 0..100 */
+    uint16_t relay_delay_ms;       /* 0..100 */
     uint8_t brightness_percent;    /* 0..100 */
     uint8_t selected_bank;         /* 1..2 */
     uint8_t power_max_watts;       /* 0..100 */
     uint8_t adc_swap;              /* 0/1 */
     uint16_t scale_bar_watts;      /* 100/400/800/1200/1600 */
     uint8_t debug_mode;            /* 0/1 */
-    uint8_t reserved[5];
+    uint8_t reserved[4];
 } atu_settings_t;
 
 typedef struct {
