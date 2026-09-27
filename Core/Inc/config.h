@@ -67,8 +67,8 @@ static const band_config_t bands[NUM_BANDS] = {
 #define SWR_THRESHOLD_DEFAULT   1.5f    // Default threshold
 #define RELAY_DELAY_DEFAULT     100     // ms between relay changes
 
-/* Forbidden relay combinations (to prevent resonance) */
-#define FORBID_MAX_CAP_MAX_IND  1       // Disable if both max C and max L
+/* All clipped 0..255 LC combinations are valid for fine search */
+#define FORBID_MAX_CAP_MAX_IND  0
 #define MAX_CAPACITOR_MASK      0xFF    // 640 pF
 #define MAX_INDUCTOR_MASK       0xFF    // 6.4 µH
 
@@ -161,17 +161,21 @@ static const band_config_t bands[NUM_BANDS] = {
 
 /* ========== FRAM Memory Layout ========== */
 
-#define FRAM_SERVICE_BASE       0x0000  // Service info (256 bytes)
-#define FRAM_PRESETS_BASE       0x0100  // Presets start at offset 0x100
-#define FRAM_PRESET_SIZE        3       // bytes per preset (cap, ind, flags)
+#define FRAM_TOTAL_SIZE         0x2000  // 8 KiB FM24CL64
+#define FRAM_SERVICE_BASE       0x0000  // Header + global settings
+#define FRAM_PRESETS_BASE       0x0100  // Bank 1 presets
+#define FRAM_PRESET_SIZE        4       // cap, ind, flags, valid marker
+#define FRAM_PRESET_SLOT_COUNT  176     // 11 amateur bands
+#define FRAM_PRESET_BANK_SIZE   (FRAM_PRESET_SLOT_COUNT * FRAM_PRESET_SIZE)
+#define FRAM_PRESET_BANK1_BASE  0x0100
+#define FRAM_PRESET_BANK2_BASE  (FRAM_PRESET_BANK1_BASE + FRAM_PRESET_BANK_SIZE)
+#define FRAM_FUTURE_BASE        (FRAM_PRESET_BANK2_BASE + FRAM_PRESET_BANK_SIZE)
+#define FRAM_VALID_MARKER       0xA5
 
 /* FRAM Service Area */
-#define FRAM_VERSION_OFFSET     0x0000
-#define FRAM_CHECKSUM_OFFSET    0x0001
-#define FRAM_CAT_MODE_OFFSET    0x0002
-#define FRAM_SWR_THRESHOLD_OFFSET 0x0003
-#define FRAM_RELAY_DELAY_OFFSET 0x0005
-#define FRAM_TIMEOUT_OFFSET     0x0007
+#define FRAM_HEADER_MAGIC       0x41545531u
+#define FRAM_HEADER_VERSION     0x0001u
+#define FRAM_SETTINGS_OFFSET    0x0008u
 
 /* ========== Preset Structure ========== */
 
