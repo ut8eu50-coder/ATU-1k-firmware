@@ -70,7 +70,7 @@ atu_storage_status_t atu_frequency_manager_update(atu_frequency_manager_t *manag
         manager->last_frequency_hz = result->active_frequency_hz;
         manager->have_frequency = true;
         manager->last_bank = inputs->active_bank;
-        return ATU_STORAGE_NOT_FOUND;
+        return ATU_STORAGE_UNAVAILABLE;
     }
 
     status = atu_storage_load_preset(ops, inputs->active_bank, result->active_frequency_hz, &result->preset);

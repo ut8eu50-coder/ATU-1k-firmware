@@ -148,7 +148,6 @@ uint16_t atu_storage_checksum16(const void *data, size_t length)
 
 bool atu_storage_find_band(uint32_t frequency_hz, atu_preset_location_t *location)
 {
-    uint32_t frequency_khz = frequency_hz / 1000u;
     uint16_t slot_base = 0u;
     uint8_t band_index = 0u;
 
@@ -159,10 +158,11 @@ bool atu_storage_find_band(uint32_t frequency_hz, atu_preset_location_t *locatio
         uint32_t slot_count = ((max_khz - min_khz) / step_khz) + 1u;
         uint32_t min_hz = min_khz * 1000u;
         uint32_t max_hz = (max_khz * 1000u) + 999u;
+        uint32_t step_hz = step_khz * 1000u;
 
         if ((frequency_hz >= min_hz) && (frequency_hz <= max_hz)) {
-            uint32_t rounded_offset = (frequency_khz - min_khz) + (step_khz / 2u);
-            uint16_t band_slot = (uint16_t)(rounded_offset / step_khz);
+            uint32_t rounded_offset_hz = (frequency_hz - min_hz) + (step_hz / 2u);
+            uint16_t band_slot = (uint16_t)(rounded_offset_hz / step_hz);
 
             if ((uint32_t)band_slot >= slot_count) {
                 band_slot = (uint16_t)(slot_count - 1u);

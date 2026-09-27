@@ -206,6 +206,9 @@ atu_tuner_status_t atu_tuner_start(atu_tuner_t *tuner,
     tuner->best_swr = FLT_MAX;
     tuner->search_reference_swr = FLT_MAX;
     tuner->current_swr = 0.0f;
+    tuner->current_cap_mask = 0u;
+    tuner->current_ind_mask = 0u;
+    tuner->current_topology = request->initial_topology;
     tuner->effective_bypass_enabled = request->bypass_enabled;
     tuner->result.used_preset_path = request->has_preset;
 

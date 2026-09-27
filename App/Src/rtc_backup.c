@@ -40,7 +40,7 @@ bool atu_rtc_backup_pack(const atu_rtc_backup_state_t *state, uint32_t registers
                    ((uint32_t)state->ind_mask << 8) |
                    ((uint32_t)(state->flags & 0x03u) << 16) |
                    ((uint32_t)state->bank << 24);
-    registers[3] = ((uint32_t)ATU_RTC_BACKUP_VERSION << 16) | checksum;
+    registers[3] = (((uint32_t)ATU_RTC_BACKUP_VERSION & 0xFFFFu) << 16) | checksum;
     return true;
 }
 
@@ -52,7 +52,8 @@ bool atu_rtc_backup_unpack(const uint32_t registers[ATU_RTC_BACKUP_REG_COUNT], a
         return false;
     }
 
-    if ((registers[0] != ATU_RTC_BACKUP_MAGIC) || ((registers[3] >> 16) != ATU_RTC_BACKUP_VERSION)) {
+    if ((registers[0] != ATU_RTC_BACKUP_MAGIC) ||
+        (((registers[3] >> 16) & 0xFFFFu) != ATU_RTC_BACKUP_VERSION)) {
         return false;
     }
 
