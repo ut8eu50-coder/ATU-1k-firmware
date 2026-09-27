@@ -93,13 +93,13 @@ The ATU-1k uses a 5-step L-network (Г-цепочка) tuning algorithm with two
 
 ### Step 5: Result Finalization
 
-**Objective:** Save tuning result to FRAM and display outcome.
+**Objective:** Keep the best tested relay state active, restore PA output, and display outcome.
 
 **Procedure:**
 1. Apply final relay masks (already set from Step 4)
-2. Save to FRAM:
-   - Frequency band + offset → FRAM address
-   - cap_mask, ind_mask, topology flag
+2. Do **not** save automatically. Preset storage is operator-driven only:
+   - short **TUNE** = start/continue tuning
+   - long **TUNE** (>= 500 ms) = save current cap_mask, ind_mask, topology, and bypass state
 3. Output result to display:
    - Final SWR value
    - Capacitor and inductor states
@@ -118,23 +118,15 @@ If FRAM already contains preset for current frequency:
 4. **Fine search only** (skip Steps 1-3):
    - Search in ±2 bit range around loaded values
    - Typically completes in 1-2 seconds
-5. Optionally update FRAM with refined values
+5. Keep the refined relay state active, but do **not** write it back to FRAM automatically
 
 ---
 
 ## Protection & Constraints
 
-### Forbidden Relay Combinations
+### Fine Search Coverage
 
-```c
-if (FORBID_MAX_CAP_MAX_IND) {
-    // Prevent both max C (640pF) and max L (6.4µH) simultaneously
-    if (cap_mask == 0xFF && ind_mask == 0xFF) {
-        // Skip this combination
-        continue;
-    }
-}
-```
+All clipped integer mask combinations inside the fine-search window are valid. There are no forbidden LC combinations in the current firmware search model.
 
 ### Tuning Parameters (Configurable in Menu)
 
@@ -152,7 +144,8 @@ if (FORBID_MAX_CAP_MAX_IND) {
 
 1. **USB Connected + CAT Data Available** → Use CAT frequency
 2. **USB Disconnected** → Use Frequency Counter (PD2)
-3. **Both Unavailable** → Manual mode (operator uses TUNE button)
+3. **USB Connected but CAT stale/invalid** → Manual mode (PD2 counter is blocked while USB is present)
+4. **Both Unavailable or Unsupported Band** → Manual mode (operator uses TUNE button)
 
 ### Auto-Preset Application
 

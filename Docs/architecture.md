@@ -102,17 +102,26 @@
 - Requires external Ethernet/WiFi module (not on current PCB)
 
 ### 10. **Tuning Algorithm** (`App/tuner.c`)
-- 5-step L-network tuning
-- Topology selection (IN vs OUT)
-- Coarse and fine search
-- Preset caching and fast-tune mode
+- Non-blocking L-network tuning state machine
+- Topology selection (IN vs OUT), coarse greedy search, and fine search
+- Fast-tune path when a preset is already available
+- OUT_PA forced off for the whole tuning window and restored on exit
 
-### 11. **Memory Management** (`App/memory.c`)
-- FRAM address calculation
-  - Band ID + frequency offset → linear address
-  - Supports all 11 bands with variable segment widths
-- Preset load/save/erase
-- Settings persistence
+### 11. **Storage / Persistence** (`App/storage.c`, `App/rtc_backup.c`)
+- FRAM settings header + two independent preset banks
+- Band ID + stepped frequency offset → linear preset slot
+- Explicit preset valid marker for erased/uninitialized detection
+- RTC backup snapshot for last frequency + relay state restore after reset
+
+### 12. **UI Input / Menu** (`App/button.c`, `App/menu.c`)
+- 5 ms polling debouncer with 7-sample stability target
+- 500 ms repeat for C+/C-/L+/L-
+- Event-driven 10-item settings menu with FRAM persistence
+
+### 13. **Power Metering** (`Drivers/ADC/power_meter.c`)
+- 64-sample/channel FWD/REV/VREFINT batch processing
+- Logical ADC swap support
+- Forward/reverse/net power and SWR calculation from linear detector scaling
 
 ## Interrupt & Timer Structure
 
@@ -134,20 +143,14 @@
 
 ### I2C FRAM (FM24CL64)
 ```
-0x0000 ─ 0x00FF (256 B): Service area
-  0x0000: Version
-  0x0001: Checksum
-  0x0002: CAT mode
-  0x0003-0x0004: SWR threshold
-  0x0005-0x0006: Relay delay
-  0x0007-0x0008: Timeout
+0x0000 ─ 0x003F: Settings/header block
+  magic, version, checksum, persisted menu settings
 
-0x0100 ─ 0x1FFF (7.75 KB): Presets (~165 × 3 bytes)
-  160m: 0x0100 ─ 0x0117
-  80m:  0x0118 ─ 0x013F
-  60m:  0x0140 ─ 0x0149
-  ...
-  6m:   0x1FE0 ─ 0x1FFF
+0x0100 ─ 0x03BF: Preset bank 1 (176 × 4-byte records)
+0x03C0 ─ 0x067F: Preset bank 2 (176 × 4-byte records)
+  record = cap_mask, ind_mask, flags, valid_marker
+
+0x0680 ─ 0x1FFF: Reserved for future expansion
 ```
 
 ## Data Flow: Frequency Update
@@ -157,14 +160,14 @@ CAT Command (e.g., FA14200000;)
     ↓
 USB VCP RX interrupt
     ↓
-cat_parser_process() → extract frequency
+cat_parser_process() → extract frequency in Hz
     ↓
 g_sys_state.freq_khz = 14200 (kHz)
 g_sys_state.freq_source = FREQ_SOURCE_CAT
     ↓
-Memory.c: find_band() → band_id = BAND_20M
+storage.c: find_band() → band_id = BAND_20M
     ↓
-Memory.c: find_preset() → lookup FRAM at offset
+storage.c: find_preset() → lookup FRAM in active bank
     ↓
 IF FOUND:
     relay_apply_preset()
@@ -192,12 +195,13 @@ tuner_start_auto_tune()
     ├─ Step 2: Coarse inductance (1 s)
     ├─ Step 3: Coarse capacitance (1 s)
     ├─ Step 4: Fine search (3-10 s)
-    └─ Step 5: Finalize & save to FRAM
+    └─ Step 5: Finalize without auto-save
     ↓
 Display shows result (GREEN if SWR < threshold, RED if timeout)
     ↓
 Operator can:
-   • Keep result (automatically saved to preset)
+   • Keep result active without saving
+   • Long-press TUNE to save current preset explicitly
    • Manually adjust with C±, L± buttons
    • Change frequency and tune new frequency
 ```
@@ -214,7 +218,7 @@ g_sys_state.freq_source_priority = CAT > Counter
     ↓
 Transistor key BLOCKS PD2 input (frequency counter inactive)
     ↓
-Await CAT commands on USB VCP
+Await CAT commands on USB VCP; PD2 counter is considered unavailable while USB is present
 
 ─────────────────────────────────────
 
