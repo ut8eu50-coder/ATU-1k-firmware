@@ -154,6 +154,9 @@ size_t atu_debug_log_flush(atu_debug_log_t *log, size_t max_bytes)
         }
 
         sent = log->write(log->context, chunk, bytes_to_send);
+        if (sent > bytes_to_send) {
+            sent = bytes_to_send;
+        }
         written += sent;
 
         cursor = sent;

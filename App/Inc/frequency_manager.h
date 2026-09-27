@@ -52,6 +52,7 @@ typedef struct {
     bool have_frequency;
     uint32_t last_frequency_hz;
     atu_frequency_source_t last_source;
+    uint8_t last_bank;
 } atu_frequency_manager_t;
 
 void atu_frequency_manager_init(atu_frequency_manager_t *manager);

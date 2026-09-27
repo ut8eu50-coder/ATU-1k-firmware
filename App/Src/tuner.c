@@ -49,13 +49,13 @@ static void atu_tuner_apply_final_network(atu_tuner_t *tuner)
                                        tuner->best_cap_mask,
                                        tuner->best_ind_mask,
                                        tuner->best_topology,
-                                       tuner->request.bypass_enabled);
+                                       tuner->effective_bypass_enabled);
     } else {
         (void)tuner->ops.apply_network(tuner->ops.context,
                                        tuner->request.initial_cap_mask,
                                        tuner->request.initial_ind_mask,
                                        tuner->request.initial_topology,
-                                       tuner->request.bypass_enabled);
+                                       tuner->effective_bypass_enabled);
     }
 }
 
@@ -85,7 +85,7 @@ static bool atu_tuner_schedule_candidate(atu_tuner_t *tuner,
         return false;
     }
 
-    if (!tuner->ops.apply_network(tuner->ops.context, cap_mask, ind_mask, topology, tuner->request.bypass_enabled)) {
+    if (!tuner->ops.apply_network(tuner->ops.context, cap_mask, ind_mask, topology, tuner->effective_bypass_enabled)) {
         return false;
     }
 
@@ -206,6 +206,7 @@ atu_tuner_status_t atu_tuner_start(atu_tuner_t *tuner,
     tuner->best_swr = FLT_MAX;
     tuner->search_reference_swr = FLT_MAX;
     tuner->current_swr = 0.0f;
+    tuner->effective_bypass_enabled = request->bypass_enabled;
     tuner->result.used_preset_path = request->has_preset;
 
     if (tuner->ops.set_pa_output != NULL) {

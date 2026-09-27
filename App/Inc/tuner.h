@@ -100,6 +100,7 @@ typedef struct {
     uint8_t current_cap_mask;
     uint8_t current_ind_mask;
     uint8_t current_topology;
+    bool effective_bypass_enabled;
     uint8_t best_cap_mask;
     uint8_t best_ind_mask;
     uint8_t best_topology;

@@ -21,6 +21,7 @@ atu_storage_status_t atu_frequency_manager_update(atu_frequency_manager_t *manag
     atu_storage_status_t status = ATU_STORAGE_NOT_FOUND;
     bool can_use_cat = false;
     bool can_use_counter = false;
+    bool bank_changed = false;
 
     if ((manager == NULL) || (inputs == NULL) || (result == NULL)) {
         return ATU_STORAGE_BAD_ARGUMENT;
@@ -43,11 +44,13 @@ atu_storage_status_t atu_frequency_manager_update(atu_frequency_manager_t *manag
 
     result->source_changed = (result->source != manager->last_source);
     result->frequency_changed = (!manager->have_frequency) || (result->active_frequency_hz != manager->last_frequency_hz);
+    bank_changed = (inputs->active_bank != manager->last_bank);
 
     if (result->source == ATU_FREQUENCY_SOURCE_MANUAL) {
         manager->last_source = result->source;
         manager->have_frequency = false;
         manager->last_frequency_hz = 0u;
+        manager->last_bank = inputs->active_bank;
         return ATU_STORAGE_NOT_FOUND;
     }
 
@@ -57,6 +60,7 @@ atu_storage_status_t atu_frequency_manager_update(atu_frequency_manager_t *manag
         manager->last_source = result->source;
         manager->have_frequency = true;
         manager->last_frequency_hz = result->active_frequency_hz;
+        manager->last_bank = inputs->active_bank;
         return ATU_STORAGE_NOT_FOUND;
     }
 
@@ -65,13 +69,14 @@ atu_storage_status_t atu_frequency_manager_update(atu_frequency_manager_t *manag
         manager->last_source = result->source;
         manager->last_frequency_hz = result->active_frequency_hz;
         manager->have_frequency = true;
+        manager->last_bank = inputs->active_bank;
         return ATU_STORAGE_NOT_FOUND;
     }
 
     status = atu_storage_load_preset(ops, inputs->active_bank, result->active_frequency_hz, &result->preset);
     if (status == ATU_STORAGE_OK) {
         result->preset_found = true;
-        result->apply_preset = result->frequency_changed || result->source_changed;
+        result->apply_preset = result->frequency_changed || result->source_changed || bank_changed;
         result->ui_state = ATU_FREQUENCY_UI_PRESET_FOUND;
     } else {
         result->preset_found = false;
@@ -81,6 +86,7 @@ atu_storage_status_t atu_frequency_manager_update(atu_frequency_manager_t *manag
     manager->last_source = result->source;
     manager->last_frequency_hz = result->active_frequency_hz;
     manager->have_frequency = true;
+    manager->last_bank = inputs->active_bank;
 
     return status;
 }
