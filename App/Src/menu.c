@@ -128,9 +128,9 @@ atu_menu_result_t atu_menu_handle_event(atu_menu_state_t *state,
             break;
 
         case ATU_MENU_ITEM_DELAY_RELAY:
-            if (increment && (state->draft_settings.relay_delay_ms < 100u)) {
+            if (increment && (state->draft_settings.relay_delay_ms < RELAY_DELAY_MAX)) {
                 state->draft_settings.relay_delay_ms++;
-            } else if (!increment && (state->draft_settings.relay_delay_ms > 0u)) {
+            } else if (!increment && (state->draft_settings.relay_delay_ms > RELAY_DELAY_MIN)) {
                 state->draft_settings.relay_delay_ms--;
             }
             break;

@@ -65,6 +65,7 @@ static const band_config_t bands[NUM_BANDS] = {
 #define TEST_CAPACITOR_MASK     0x02    // 10 pF (bit 1)
 #define TUNER_TIMEOUT_DEFAULT   30000   // ms
 #define SWR_THRESHOLD_DEFAULT   1.5f    // Default threshold
+#define RELAY_DELAY_MIN         0       // ms
 #define RELAY_DELAY_MAX         100     // ms between relay changes
 #define RELAY_DELAY_DEFAULT     100     // ms between relay changes
 

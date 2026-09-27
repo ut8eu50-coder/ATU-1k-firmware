@@ -386,7 +386,7 @@ void atu_tuner_get_progress(const atu_tuner_t *tuner, uint32_t now_ms, atu_tuner
     progress->best_swr = (tuner->best_swr < FLT_MAX) ? tuner->best_swr : 0.0f;
 }
 
-void atu_tuner_export_preset(const atu_tuner_t *tuner, bool bypass_enabled, preset_t *preset)
+void atu_tuner_export_preset(const atu_tuner_t *tuner, preset_t *preset)
 {
     if ((tuner == NULL) || (preset == NULL)) {
         return;
@@ -395,7 +395,7 @@ void atu_tuner_export_preset(const atu_tuner_t *tuner, bool bypass_enabled, pres
     preset->cap_mask = (tuner->best_swr < FLT_MAX) ? tuner->best_cap_mask : tuner->request.initial_cap_mask;
     preset->ind_mask = (tuner->best_swr < FLT_MAX) ? tuner->best_ind_mask : tuner->request.initial_ind_mask;
     preset->flags = (uint8_t)(((tuner->best_swr < FLT_MAX) ? tuner->best_topology : tuner->request.initial_topology) & 0x01u);
-    if (bypass_enabled) {
+    if (tuner->effective_bypass_enabled) {
         preset->flags |= 0x02u;
     }
 }

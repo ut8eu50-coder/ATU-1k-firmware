@@ -125,6 +125,6 @@ atu_tuner_status_t atu_tuner_process(atu_tuner_t *tuner, uint32_t now_ms);
 void atu_tuner_abort(atu_tuner_t *tuner, uint32_t now_ms);
 bool atu_tuner_is_active(const atu_tuner_t *tuner);
 void atu_tuner_get_progress(const atu_tuner_t *tuner, uint32_t now_ms, atu_tuner_progress_t *progress);
-void atu_tuner_export_preset(const atu_tuner_t *tuner, bool bypass_enabled, preset_t *preset);
+void atu_tuner_export_preset(const atu_tuner_t *tuner, preset_t *preset);
 
 #endif /* ATU_TUNER_H */
