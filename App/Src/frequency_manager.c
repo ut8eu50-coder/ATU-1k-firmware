@@ -60,6 +60,14 @@ atu_storage_status_t atu_frequency_manager_update(atu_frequency_manager_t *manag
         return ATU_STORAGE_NOT_FOUND;
     }
 
+    if (ops == NULL) {
+        result->ui_state = ATU_FREQUENCY_UI_PRESET_MISSING;
+        manager->last_source = result->source;
+        manager->last_frequency_hz = result->active_frequency_hz;
+        manager->have_frequency = true;
+        return ATU_STORAGE_NOT_FOUND;
+    }
+
     status = atu_storage_load_preset(ops, inputs->active_bank, result->active_frequency_hz, &result->preset);
     if (status == ATU_STORAGE_OK) {
         result->preset_found = true;

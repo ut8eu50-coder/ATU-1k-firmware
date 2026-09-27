@@ -131,8 +131,9 @@ size_t atu_debug_log_flush(atu_debug_log_t *log, size_t max_bytes)
 {
     uint8_t chunk[64];
     size_t bytes_to_send = 0u;
-    size_t index = 0u;
     size_t written = 0u;
+    size_t sent = 0u;
+    size_t cursor = 0u;
 
     if ((log == NULL) || (log->write == NULL) || (max_bytes == 0u)) {
         return 0u;
@@ -140,26 +141,28 @@ size_t atu_debug_log_flush(atu_debug_log_t *log, size_t max_bytes)
 
     while ((log->tail != log->head) && (written < max_bytes)) {
         bytes_to_send = 0u;
-        while ((log->tail != log->head) &&
+        cursor = log->tail;
+        while ((cursor != log->head) &&
                (bytes_to_send < sizeof(chunk)) &&
                ((written + bytes_to_send) < max_bytes)) {
-            chunk[bytes_to_send++] = (uint8_t)log->buffer[log->tail];
-            log->tail = (log->tail + 1u) % log->capacity;
+            chunk[bytes_to_send++] = (uint8_t)log->buffer[cursor];
+            cursor = (cursor + 1u) % log->capacity;
         }
 
         if (bytes_to_send == 0u) {
             break;
         }
 
-        index = log->write(log->context, chunk, bytes_to_send);
-        written += index;
+        sent = log->write(log->context, chunk, bytes_to_send);
+        written += sent;
 
-        if (index < bytes_to_send) {
-            size_t rewind = bytes_to_send - index;
-            while (rewind > 0u) {
-                log->tail = (log->tail == 0u) ? (log->capacity - 1u) : (log->tail - 1u);
-                --rewind;
-            }
+        cursor = sent;
+        while (cursor > 0u) {
+            log->tail = (log->tail + 1u) % log->capacity;
+            --cursor;
+        }
+
+        if (sent < bytes_to_send) {
             break;
         }
     }

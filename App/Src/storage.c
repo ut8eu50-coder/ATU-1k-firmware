@@ -97,8 +97,8 @@ void atu_settings_sanitize(atu_settings_t *settings)
         settings->minimum_swr_tenths = 20u;
     }
 
-    if (settings->relay_delay_ms > 100u) {
-        settings->relay_delay_ms = 100u;
+    if (settings->relay_delay_ms > RELAY_DELAY_MAX) {
+        settings->relay_delay_ms = RELAY_DELAY_MAX;
     }
 
     if (settings->brightness_percent > 100u) {

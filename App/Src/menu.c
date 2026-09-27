@@ -262,7 +262,10 @@ void atu_menu_format_value(const atu_menu_state_t *state, atu_menu_item_t item, 
         break;
 
     case ATU_MENU_ITEM_ABOUT:
-        (void)snprintf(buffer, (size_t)buffer_size, "1.0.0 %s UT8EU", __DATE__);
+        (void)snprintf(buffer, (size_t)buffer_size, "%s %s %s",
+                       ATU_FIRMWARE_VERSION,
+                       ATU_FIRMWARE_BUILD_DATE,
+                       ATU_FIRMWARE_AUTHOR);
         break;
 
     case ATU_MENU_ITEM_DEBUG_MODE:

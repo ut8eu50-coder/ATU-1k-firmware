@@ -65,6 +65,7 @@ static const band_config_t bands[NUM_BANDS] = {
 #define TEST_CAPACITOR_MASK     0x02    // 10 pF (bit 1)
 #define TUNER_TIMEOUT_DEFAULT   30000   // ms
 #define SWR_THRESHOLD_DEFAULT   1.5f    // Default threshold
+#define RELAY_DELAY_MAX         100     // ms between relay changes
 #define RELAY_DELAY_DEFAULT     100     // ms between relay changes
 
 /* All clipped 0..255 LC combinations are valid for fine search */
@@ -201,5 +202,11 @@ typedef struct __attribute__((packed)) {
 /* Preset found (green), preset not found (orange) */
 #define COLOR_PRESET_FOUND      COLOR_GREEN
 #define COLOR_PRESET_NOT_FOUND  COLOR_ORANGE
+
+/* ========== Firmware Identity ========== */
+
+#define ATU_FIRMWARE_VERSION    "1.0.0"
+#define ATU_FIRMWARE_AUTHOR     "UT8EU"
+#define ATU_FIRMWARE_BUILD_DATE __DATE__
 
 #endif /* __CONFIG_H */

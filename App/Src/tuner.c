@@ -16,6 +16,21 @@ static uint8_t atu_tuner_clip_mask(int16_t value)
     return (uint8_t)value;
 }
 
+static int8_t atu_tuner_next_unset_bit(uint8_t mask, int8_t start_bit)
+{
+    int8_t bit = start_bit;
+
+    while (bit >= 0) {
+        if ((mask & (uint8_t)(1u << bit)) == 0u) {
+            return bit;
+        }
+
+        --bit;
+    }
+
+    return -1;
+}
+
 static void atu_tuner_restore_pa_output(atu_tuner_t *tuner)
 {
     if (tuner->ops.set_pa_output != NULL) {
@@ -288,13 +303,17 @@ atu_tuner_status_t atu_tuner_process(atu_tuner_t *tuner, uint32_t now_ms)
                 atu_tuner_finish(tuner, ATU_TUNER_STATUS_FAILED);
             }
         } else {
-            tuner->coarse_bit_index = 7;
-            candidate_mask = (uint8_t)(tuner->coarse_cap_mask | (uint8_t)(1u << tuner->coarse_bit_index));
-            if (!atu_tuner_schedule_candidate(tuner, now_ms, candidate_mask, tuner->coarse_ind_mask, tuner->current_topology)) {
+            tuner->coarse_bit_index = atu_tuner_next_unset_bit(tuner->coarse_cap_mask, 7);
+            if (tuner->coarse_bit_index >= 0) {
+                candidate_mask = (uint8_t)(tuner->coarse_cap_mask | (uint8_t)(1u << tuner->coarse_bit_index));
+                if (!atu_tuner_schedule_candidate(tuner, now_ms, candidate_mask, tuner->coarse_ind_mask, tuner->current_topology)) {
+                    atu_tuner_finish(tuner, ATU_TUNER_STATUS_FAILED);
+                    break;
+                }
+                tuner->phase = ATU_TUNER_PHASE_COARSE_C;
+            } else if (!atu_tuner_prepare_fine_search(tuner, now_ms, 3)) {
                 atu_tuner_finish(tuner, ATU_TUNER_STATUS_FAILED);
-                break;
             }
-            tuner->phase = ATU_TUNER_PHASE_COARSE_C;
         }
         break;
 
@@ -305,7 +324,7 @@ atu_tuner_status_t atu_tuner_process(atu_tuner_t *tuner, uint32_t now_ms)
             tuner->search_reference_swr = measurement.swr;
         }
 
-        tuner->coarse_bit_index--;
+        tuner->coarse_bit_index = atu_tuner_next_unset_bit(tuner->coarse_cap_mask, (int8_t)(tuner->coarse_bit_index - 1));
         if (tuner->coarse_bit_index >= 0) {
             candidate_mask = (uint8_t)(tuner->coarse_cap_mask | (uint8_t)(1u << tuner->coarse_bit_index));
             if (!atu_tuner_schedule_candidate(tuner, now_ms, candidate_mask, tuner->coarse_ind_mask, tuner->current_topology)) {
